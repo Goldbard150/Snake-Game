@@ -1,15 +1,14 @@
 import pygame
 import json
 
-from uses.const import SCREEN
+from uses.use import SCREEN
 
 
 class Score:
 
     def __init__(self):
         self._score = 0
-        self._best_score = 0
-        self.load_score()
+        self._best_score = self.load_score()
 
     def increase(self):
         self._score += 1
@@ -27,20 +26,28 @@ class Score:
                                  True, (255, 255, 255))
         SCREEN.blit(score_text, (10, 60))
 
-    def save_score(self):
-        with open("./score/score.json", "w") as f:
-            json.dump({"best_score": self._score}, f)
+    def save_score(self, check: bool = False):
+        if self._score > self.load_score() or check:
+            with open("./score/score.json", "w") as f:
+                json.dump({"best_score": self._score}, f)
 
 
-    def load_score(self):
+    @staticmethod
+    def load_score():
         try:
             with open("./score/score.json", "r") as f:
                 data = json.load(f)
-                self._best_score = data["best_score"]
+                return data["best_score"]
         except FileNotFoundError:
-            self._best_score = 0
+            return 0
 
 
     def update_score(self):
         if self._score > self._best_score:
             self._best_score = self._score
+
+    def reset_score(self):
+        self._score = 0
+        self._best_score = 0
+        self.save_score(check=True)
+
