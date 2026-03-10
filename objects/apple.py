@@ -1,7 +1,6 @@
-import random
-
 import pygame
-from uses.const import SCREEN, SIZE
+from random import randint
+from uses.use import SCREEN, SIZE
 from uses.background import SQUARE_SIZE
 
 RED = (255, 0, 0)
@@ -15,8 +14,8 @@ class Apple:
 
     def draw_apple(self):
         if not self._collided:
-            self._pos[0] = random.randint(3, SIZE[0] // APPLE_SIZE - 3) * APPLE_SIZE
-            self._pos[1] = random.randint(3, SIZE[1] // APPLE_SIZE - 3) * APPLE_SIZE
+            self._pos[0] = randint(3, SIZE[0] // APPLE_SIZE - 3) * APPLE_SIZE
+            self._pos[1] = randint(3, SIZE[1] // APPLE_SIZE - 3) * APPLE_SIZE
             self._collided = True
 
 

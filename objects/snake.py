@@ -1,5 +1,5 @@
 import pygame
-from uses.const import SCREEN, SIZE
+from uses.use import SCREEN, SIZE
 from objects.apple import Apple
 from score.score import Score
 

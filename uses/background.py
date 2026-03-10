@@ -1,5 +1,5 @@
 from pygame import draw, image, Surface, Rect
-from const import SIZE, SCREEN
+from uses.use import SIZE, SCREEN
 
 GREEN = (69, 255, 72)
 BLUE = (145, 255, 247)
@@ -22,6 +22,10 @@ def generate():
 
 
     image.save(background, "../assets/background.png")
+
+def show_background():
+    background_image = image.load("assets/background.png").convert()
+    SCREEN.blit(background_image, (0, 0))
 
 
 if __name__ == '__main__':

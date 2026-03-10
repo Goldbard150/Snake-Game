@@ -1,20 +1,22 @@
 import pygame
 from objects.snake import Snake
 from objects.apple import Apple
-from uses.const import SCREEN
+from uses.background import show_background
 
 
 
 def start_game():
     pygame.init()
     clock = pygame.time.Clock()
-    background_image = pygame.image.load("assets/background.png").convert()
+
 
     running = True
 
     snake = Snake()
     apple = Apple()
     score = snake.get_score()
+
+
 
     while running:
         running = snake.fail()
@@ -26,11 +28,14 @@ def start_game():
             if event.type == pygame.KEYDOWN:
                 snake.check_direction(event)
 
+                if event.key == pygame.K_r:
+                    score.reset_score()
+
                 if event.key == pygame.K_ESCAPE:
                     running = False
 
         pygame.display.set_caption("Snake Game")
-        SCREEN.blit(background_image, (0, 0))
+        show_background()
 
         snake.draw()
         apple.draw_apple()
