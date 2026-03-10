@@ -1,44 +1,77 @@
 import pygame
 from uses.use import SCREEN, SIZE
+from uses.background import SQUARE_SIZE
 from objects.apple import Apple
 from score.score import Score
 
-TITLE_SIZE = 20
+SNAKE_SIZE = 40
 COLOR = (0, 100, 0)
+
+pygame.mixer.init()
+eat_sound = pygame.mixer.Sound("sounds/eat_apple.wav")
+
+def load_images() -> list:
+
+    body_img = pygame.image.load("assets/snake_body.png")
+    body_img = pygame.transform.scale(body_img, (SNAKE_SIZE * 2, SNAKE_SIZE * 2))
+
+    file_mapping = {"RIGHT": "assets/snake_head_RIGHT.png",
+                    "LEFT": "assets/snake_head_LEFT.png",
+                    "UP": "assets/snake_head_UP.png",
+                    "DOWN": "assets/snake_head_DOWN.png"}
+
+    head_names = {}
+    for direction,path in file_mapping.items():
+        try:
+            img = pygame.image.load(path).convert_alpha()
+            head_names[direction] = pygame.transform.scale(img, (SNAKE_SIZE * 1.2, SNAKE_SIZE * 1.2))
+        except FileNotFoundError as e:
+            print(f"Can't Load The Image: {e}")
+
+    return [head_names, body_img]
 
 class Snake:
     def __init__(self):
-        self._coordinates = [(100, 100), (80, 100), (60, 100)]
+        self._body = [(100, 100), (80, 100), (60, 100)]
         self._direction = "RIGHT"
         self._score = Score()
+        self._images = load_images()
 
     def draw(self):
         """
         The function draws the snake.
         """
-        for segment in self._coordinates:
-            pygame.draw.rect(SCREEN, COLOR, [segment[0], segment[1], TITLE_SIZE, TITLE_SIZE])
+        head_images, body_img = self._images
+        for i, pos in enumerate(self._body):
+            if i == 0:
+                grid_rect = pygame.Rect(pos[0], pos[1], SQUARE_SIZE, SQUARE_SIZE)
+                image_rect = head_images[self._direction].get_rect()
+                image_rect.center = (grid_rect.centerx + SQUARE_SIZE // 2,
+                                     grid_rect.centery + SQUARE_SIZE // 2)
+                SCREEN.blit(head_images[self._direction], image_rect)
+            else:
+                SCREEN.blit(body_img, pos)
+
 
     def move(self, remove: bool):
         """
         The function changes the direction of the snake.
         """
-        head_x, head_y = self._coordinates[0]
+        head_x, head_y = self._body[0]
         if self._direction == "RIGHT":
-            head_x += TITLE_SIZE
+            head_x += SNAKE_SIZE
         elif self._direction == "LEFT":
-            head_x -= TITLE_SIZE
+            head_x -= SNAKE_SIZE
         elif self._direction == "UP":
-            head_y -= TITLE_SIZE
-        elif self._direction == "DOWN":
-            head_y += TITLE_SIZE
+            head_y -= SNAKE_SIZE
+        else:
+            head_y += SNAKE_SIZE
 
         new_head = (head_x, head_y)
-
-        self._coordinates.insert(0, new_head)
+        self._body.insert(0, new_head)
 
         if not remove:
-            self._coordinates.pop()
+            self._body.pop()
 
     def check_direction(self, event: pygame.event.EventType) -> None:
         """
@@ -65,15 +98,14 @@ class Snake:
         :param apple: Apple object
         :return: return True or False if collided or not.
         """
-        head_rect = pygame.Rect(self._coordinates[0][0], self._coordinates[0][1],
-                                TITLE_SIZE, TITLE_SIZE)
+        head_rect = pygame.Rect(self._body[0][0], self._body[0][1], SNAKE_SIZE, SNAKE_SIZE)
+        head_rect.centerx += SQUARE_SIZE // 2
+        head_rect.centery += SQUARE_SIZE // 2
 
-        apple_rect = pygame.Rect(apple.position[0], apple.position[1],
-                                 apple.size, apple.size)
-
-        if head_rect.colliderect(apple_rect):
+        if head_rect.colliderect(apple.rect):
             apple.change_collision()
             self._score.increase()
+            eat_sound.play()
             return True
         return False
 
@@ -82,15 +114,17 @@ class Snake:
         The function checks if there was any kind of bad collision.
         :return: True if not collided, False if collided.
         """
-        return not (self._check_self_collision() or self._check_out_board())
+        if self._check_self_collision() or self._check_out_board():
+            return False
+        return True
 
     def _check_self_collision(self) -> bool:
         """
         The function checks if the snake is collided with itself.
         :return: True of False if collided or not.
         """
-        head = self._coordinates[0]
-        body = self._coordinates[1:]
+        head = self._body[0]
+        body = self._body[1:]
 
         if head in body:
             return True
@@ -101,20 +135,12 @@ class Snake:
         The function checks if the snake is out of the board.
         :return: True if the snake is out of the board, else, return False.
         """
-        head_x, head_y = self._coordinates[0]
-        if head_x < 0 or head_x >= SIZE[0] or head_y < 0 or head_y >= SIZE[1]:
-           return True
+        head_x, head_y = self._body[0]
+
+        if (head_x < -SQUARE_SIZE or head_x > SIZE[0] - SQUARE_SIZE * 1.5 or
+                head_y < -SQUARE_SIZE or head_y > SIZE[1] - SQUARE_SIZE * 1.5):
+            return True
         return False
 
     def get_score(self):
         return self._score
-
-
-
-
-
-
-
-
-
-
